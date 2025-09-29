@@ -1,0 +1,109 @@
+<div class="postings-container">
+  <div class="header">
+    <h1>My Job Offers</h1>
+    <p>Manage and track your job offers</p>
+  </div>
+
+  <div class="actions-bar">
+    <button mat-raised-button color="primary" (click)="navigateToCreate()">
+      <mat-icon>add</mat-icon>
+      Create New Job Offer
+    </button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading job offers...</p>
+      </div>
+      
+      <div *ngIf="!loading && dataSource.data.length === 0" class="empty-state">
+        <mat-icon>work_off</mat-icon>
+        <h3>No Job Offers Found</h3>
+        <p>You haven't created any job offers yet.</p>
+        <button mat-raised-button color="primary" (click)="navigateToCreate()">
+          <mat-icon>add</mat-icon>
+          Create Your First Job Offer
+        </button>
+      </div>
+      
+      <div *ngIf="!loading && dataSource.data.length > 0" class="table-container">
+        <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z0">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Job Title</th>
+            <td mat-cell *matCellDef="let posting">{{ posting.title || 'Untitled Job' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+            <td mat-cell *matCellDef="let posting">{{ posting.createdAt | date:'short' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let posting">
+              <mat-chip [color]="posting.isActive ? 'primary' : 'warn'" selected>
+                {{ posting.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let posting">
+              <button mat-icon-button (click)="viewPosting(posting)" matTooltip="View">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button (click)="editPosting(posting)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="toggleStatus(posting)" matTooltip="{{ posting.isActive ? 'Deactivate' : 'Activate' }}">
+                <mat-icon>{{ posting.isActive ? 'pause' : 'play_arrow' }}</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deletePosting(posting)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Job Details Dialog (Lite) -->
+  <ng-template #jobDetailsDialog>
+    <div class="job-details">
+      <h2 mat-dialog-title>Job Details</h2>
+      <mat-dialog-content>
+        <div class="job-info">
+          <div class="info-row">
+            <strong>Job ID:</strong> {{ selectedPosting?.id }}
+          </div>
+          <div class="info-row">
+            <strong>Created:</strong> {{ selectedPosting?.createdAt | date:'short' }}
+          </div>
+          <div class="info-row">
+            <strong>Status:</strong>
+            <mat-chip [color]="selectedPosting?.isActive ? 'primary' : 'warn'" selected>
+              {{ selectedPosting?.isActive ? 'Active' : 'Inactive' }}
+            </mat-chip>
+          </div>
+          <div class="info-row">
+            <strong>Raw Text:</strong>
+            <p style="white-space: pre-wrap;">{{ selectedPosting?.rawText }}</p>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Close</button>
+        <button mat-button (click)="editPosting(selectedPosting!)" mat-dialog-close>Edit</button>
+      </mat-dialog-actions>
+    </div>
+  </ng-template>
+</div>

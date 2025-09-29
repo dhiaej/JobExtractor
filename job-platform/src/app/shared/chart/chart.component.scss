@@ -1,0 +1,19 @@
+.chart-container {
+  width: 100%;
+}
+
+.chart-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-wrapper {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
+canvas {
+  max-height: 100%;
+  max-width: 100%;
+}

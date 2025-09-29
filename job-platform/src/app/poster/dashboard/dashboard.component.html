@@ -1,0 +1,168 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Job Offerer Dashboard</h1>
+    <p>Welcome back, {{ currentUser?.name }}! Manage your job offers and track applications.</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">work</mat-icon>
+          <div class="card-text">
+            <h3>{{ activeJobOffers }}</h3>
+            <p>Active Job Offers</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">people</mat-icon>
+          <div class="card-text">
+            <h3>{{ totalApplications }}</h3>
+            <p>Total Applications</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">check_circle</mat-icon>
+          <div class="card-text">
+            <h3>{{ acceptedApplications }}</h3>
+            <p>Accepted</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">pending</mat-icon>
+          <div class="card-text">
+            <h3>{{ pendingApplications }}</h3>
+            <p>Pending Review</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="navigateToCreate()">
+            <mat-icon>add</mat-icon>
+            Post New Job
+          </button>
+          <button mat-stroked-button color="primary" (click)="navigateToPostings()">
+            <mat-icon>list</mat-icon>
+            Manage Jobs
+          </button>
+          <button mat-stroked-button color="accent" (click)="navigateToApplications()">
+            <mat-icon>people</mat-icon>
+            View Applications
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+
+  <!-- Applications Management -->
+  <div class="applications-management">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Applications Management</mat-card-title>
+        <mat-card-subtitle>Review and manage job applications</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        
+        <div class="table-container">
+          <table mat-table [dataSource]="filteredApplications" class="applications-table">
+            <ng-container matColumnDef="applicantName">
+              <th mat-header-cell *matHeaderCellDef>Applicant</th>
+              <td mat-cell *matCellDef="let application">{{ application.seekerName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="applicantEmail">
+              <th mat-header-cell *matHeaderCellDef>Email</th>
+              <td mat-cell *matCellDef="let application">{{ application.seekerEmail }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="jobTitle">
+              <th mat-header-cell *matHeaderCellDef>Job Title</th>
+              <td mat-cell *matCellDef="let application">{{ application.jobTitle || 'Untitled Job' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let application">
+                <mat-chip [color]="getStatusColor(application.status)">
+                  {{ application.status }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="appliedDate">
+              <th mat-header-cell *matHeaderCellDef>Applied Date</th>
+              <td mat-cell *matCellDef="let application">{{ application.createdAt | date:'short' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let application">
+                <button mat-icon-button (click)="acceptApplication(application)" 
+                        [disabled]="application.status === 'ACCEPTED'" matTooltip="Accept">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="rejectApplication(application)" 
+                        [disabled]="application.status === 'REJECTED'" matTooltip="Reject">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="applicationColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: applicationColumns;"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="chart-row">
+      <div class="chart-container">
+        <app-chart
+          title="Job Offers Posted Monthly"
+          chartType="line"
+          [data]="monthlyJobOffersData"
+          [labels]="monthlyJobOffersLabels">
+        </app-chart>
+      </div>
+      
+      <div class="chart-container">
+        <app-chart
+          title="Applications by Status"
+          chartType="pie"
+          [data]="applicationStatusData"
+          [labels]="applicationStatusLabels">
+        </app-chart>
+      </div>
+    </div>
+  </div>
+</div>

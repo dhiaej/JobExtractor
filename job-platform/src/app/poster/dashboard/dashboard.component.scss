@@ -1,0 +1,298 @@
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #1976d2;
+}
+
+.card-text {
+  h3 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+  }
+  
+  p {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.quick-actions {
+  margin-bottom: 2rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.charts-section {
+  margin-bottom: 2rem;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+.chart-container {
+  width: 100%;
+}
+
+// Post Job Section
+.post-job-section {
+  margin-bottom: 2rem;
+  
+  .post-job-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .post-option {
+    text-align: center;
+    padding: 1.5rem;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+    
+    &:hover {
+      border-color: #1976d2;
+    }
+    
+    h3 {
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+    
+    p {
+      margin: 0 0 1rem 0;
+      color: #666;
+    }
+  }
+  
+  .file-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+// My Job Offers
+.my-job-offers {
+  margin-bottom: 2rem;
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .job-offers-table {
+    width: 100%;
+    
+    .mat-column-title {
+      font-weight: 500;
+      min-width: 200px;
+    }
+    
+    .mat-column-company {
+      min-width: 150px;
+    }
+    
+    .mat-column-location {
+      min-width: 120px;
+    }
+    
+    .mat-column-contractType {
+      width: 100px;
+    }
+    
+    .mat-column-domain {
+      min-width: 150px;
+    }
+    
+    .mat-column-applications {
+      width: 100px;
+      text-align: center;
+    }
+    
+    .mat-column-status {
+      width: 100px;
+    }
+    
+    .mat-column-createdAt {
+      width: 120px;
+    }
+    
+    .mat-column-actions {
+      width: 150px;
+      text-align: center;
+    }
+  }
+  
+  .application-count {
+    font-weight: 600;
+    color: #1976d2;
+  }
+}
+
+// Applications Management
+.applications-management {
+  margin-bottom: 2rem;
+  
+  .applications-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+    
+    mat-form-field {
+      min-width: 200px;
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .applications-table {
+    width: 100%;
+    
+    .mat-column-applicantName {
+      font-weight: 500;
+      min-width: 150px;
+    }
+    
+    .mat-column-applicantEmail {
+      min-width: 200px;
+    }
+    
+    .mat-column-jobTitle {
+      min-width: 150px;
+    }
+    
+    .mat-column-company {
+      min-width: 120px;
+    }
+    
+    .mat-column-status {
+      width: 100px;
+    }
+    
+    .mat-column-appliedDate {
+      width: 120px;
+    }
+    
+    .mat-column-actions {
+      width: 120px;
+      text-align: center;
+    }
+  }
+}
+
+// Recent Postings (legacy)
+.recent-postings {
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+  }
+  
+  .mat-column-title {
+    font-weight: 500;
+  }
+  
+  .mat-column-actions {
+    width: 120px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .chart-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

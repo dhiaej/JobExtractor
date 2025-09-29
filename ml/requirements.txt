@@ -1,0 +1,11 @@
+flask
+flask-cors
+transformers
+sentence-transformers
+torch               # or install appropriate GPU/CPU build
+spacy
+spacy-langdetect    # optional
+pdfplumber
+pytesseract         # optional (OCR)
+pdf2image           # optional if using OCR
+matplotlib

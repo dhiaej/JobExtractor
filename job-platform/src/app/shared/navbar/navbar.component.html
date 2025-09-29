@@ -1,0 +1,29 @@
+<mat-toolbar color="primary" class="navbar">
+  <div class="navbar-content">
+    <div class="navbar-left">
+      <button mat-icon-button (click)="toggleSidebar()" class="menu-button">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <a routerLink="/" class="app-title">
+        <div class="brand-icon">
+          <mat-icon>work</mat-icon>
+        </div>
+        JobPlatform
+      </a>
+    </div>
+
+    <div class="navbar-right" *ngIf="currentUser">
+      <div class="user-info">
+        <mat-icon class="user-icon">account_circle</mat-icon>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser.name }}</span>
+          <span class="user-role">{{ currentUser.role | titlecase }}</span>
+        </div>
+      </div>
+      <button mat-button (click)="logout()" class="logout-button">
+        <mat-icon class="logout-icon">logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</mat-toolbar>

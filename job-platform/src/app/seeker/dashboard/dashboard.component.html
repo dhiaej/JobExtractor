@@ -1,0 +1,111 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Job Seeker Dashboard</h1>
+    <p>Welcome back, {{ currentUser?.name }}! Find your next opportunity.</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">work</mat-icon>
+          <div class="card-text">
+            <h3>{{ totalJobs }}</h3>
+            <p>Available Jobs</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">assignment</mat-icon>
+          <div class="card-text">
+            <h3>{{ applicationsSent }}</h3>
+            <p>Applications Sent</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">check_circle</mat-icon>
+          <div class="card-text">
+            <h3>{{ acceptedApplications }}</h3>
+            <p>Accepted</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-card-content>
+        <div class="card-content">
+          <mat-icon class="card-icon">pending</mat-icon>
+          <div class="card-text">
+            <h3>{{ pendingApplications }}</h3>
+            <p>Pending</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+
+
+  <!-- My Applications -->
+  <div class="my-applications">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>My Applications</mat-card-title>
+        <mat-card-subtitle>Track your application status</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="applications-table-container">
+          <table mat-table [dataSource]="myApplications" class="applications-table">
+            <ng-container matColumnDef="job">
+              <th mat-header-cell *matHeaderCellDef>Job</th>
+              <td mat-cell *matCellDef="let application">{{ application.jobTitle || 'Untitled Job' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let application">
+                <mat-chip [color]="getStatusColor(application.status)">
+                  {{ application.status }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="appliedDate">
+              <th mat-header-cell *matHeaderCellDef>Applied Date</th>
+              <td mat-cell *matCellDef="let application">{{ application.createdAt | date }}</td>
+            </ng-container>
+
+
+            <tr mat-header-row *matHeaderRowDef="applicationColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: applicationColumns;"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="chart-row">
+      <div class="chart-container">
+        <app-chart
+          title="Application Status"
+          chartType="doughnut"
+          [data]="applicationStatusData"
+          [labels]="applicationStatusLabels">
+        </app-chart>
+      </div>
+    </div>
+  </div>
+</div>

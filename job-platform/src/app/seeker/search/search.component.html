@@ -1,0 +1,300 @@
+<div class="search-container">
+  <!-- Search Header -->
+  <div class="search-header">
+    <div class="header-content">
+      <h1 class="page-title">Find Your Dream Job</h1>
+      <p class="page-subtitle">Discover opportunities that match your skills and aspirations</p>
+    </div>
+  </div>
+
+  <!-- Simple Search -->
+  <div class="search-form-container">
+    <div class="search-form-card">
+      <div class="search-info">
+        <h2>Available Job Offers</h2>
+        <p>Browse all active job offers and extract detailed information</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="search-filters-section">
+    <mat-card>
+      <mat-card-content>
+        <div class="search-filters">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search by Job Title</mat-label>
+            <input matInput [(ngModel)]="searchKeyword" placeholder="Enter job title to search...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="date-field">
+            <mat-label>Filter by Date</mat-label>
+            <mat-select [(ngModel)]="selectedDateFilter">
+              <mat-option value="">All Dates</mat-option>
+              <mat-option value="today">Today</mat-option>
+              <mat-option value="week">This Week</mat-option>
+              <mat-option value="month">This Month</mat-option>
+              <mat-option value="older">Older</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <button mat-raised-button color="primary" (click)="applyFilters()">
+            <mat-icon>filter_list</mat-icon>
+            Apply Filters
+          </button>
+          
+          <button mat-stroked-button (click)="clearFilters()">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Search Results -->
+  <div class="results-section" *ngIf="filteredResults.length > 0">
+    <div class="results-header">
+      <div class="results-info">
+        <h2 class="results-title">Search Results</h2>
+        <p class="results-count">{{ filteredResults.length }} job{{ filteredResults.length !== 1 ? 's' : '' }} found</p>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <div class="job-card" *ngFor="let job of filteredResults; let i = index">
+        <div class="job-header">
+          <div class="job-title-section">
+            <h3 class="job-title">{{ job.title || 'Untitled Job' }}</h3>
+            <div class="job-status">
+              <mat-chip [color]="job.isActive ? 'primary' : 'warn'" selected>
+                {{ job.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip>
+            </div>
+          </div>
+          <div class="job-date">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ job.createdAt | date:'MMM d, y' }}</span>
+          </div>
+        </div>
+
+        <div class="job-actions">
+          <button mat-raised-button 
+                  color="primary"
+                  (click)="viewJobDetails(job)"
+                  class="action-button">
+            <mat-icon>visibility</mat-icon>
+            View
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div class="no-results" *ngIf="searchResults.length === 0">
+    <div class="no-results-content">
+      <div class="no-results-icon">
+        <mat-icon>work_off</mat-icon>
+      </div>
+      <h3 class="no-results-title">No active jobs found</h3>
+      <p class="no-results-message">
+        There are currently no active job offers available.
+      </p>
+    </div>
+  </div>
+
+
+  <!-- Job Details Dialog -->
+  <ng-template #jobDetailsDialog>
+    <div class="job-details-dialog">
+      <h2 mat-dialog-title>
+        <mat-icon>work</mat-icon>
+        Job Details
+      </h2>
+      <mat-dialog-content>
+        <div class="job-details-content" *ngIf="selectedJob">
+          <div class="job-info-section">
+            <h3>Job Description</h3>
+            <div class="raw-text-content">
+              <pre>{{ selectedJob.rawText }}</pre>
+            </div>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions>
+        <button mat-raised-button 
+                color="primary"
+                (click)="extractJobData(selectedJob!)"
+                [disabled]="isExtracting">
+          <mat-spinner *ngIf="isExtracting" diameter="16"></mat-spinner>
+          <mat-icon *ngIf="!isExtracting">auto_awesome</mat-icon>
+          {{ isExtracting ? 'Extracting...' : 'Extract Data' }}
+        </button>
+        <button mat-button mat-dialog-close>Close</button>
+      </mat-dialog-actions>
+    </div>
+  </ng-template>
+
+  <!-- Extract Results Dialog -->
+  <ng-template #extractResultsDialog>
+    <div class="extract-results-dialog">
+      <h2 mat-dialog-title>
+        <mat-icon>auto_awesome</mat-icon>
+        Extracted Job Data
+      </h2>
+      <mat-dialog-content>
+        <div class="extract-results-content" *ngIf="extractedData">
+          <mat-table [dataSource]="extractedDataTable" class="extraction-table">
+            <!-- Job Title Column -->
+            <ng-container matColumnDef="job_title">
+              <th mat-header-cell *matHeaderCellDef>Job Title</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.job_title?.value || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Company Column -->
+            <ng-container matColumnDef="company">
+              <th mat-header-cell *matHeaderCellDef>Company</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.company?.value || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Location Column -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef>Location</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.location?.value?.join(', ') || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Contract Type Column -->
+            <ng-container matColumnDef="contract_type">
+              <th mat-header-cell *matHeaderCellDef>Contract Type</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.contract_type?.join(', ') || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Domain Column -->
+            <ng-container matColumnDef="domain">
+              <th mat-header-cell *matHeaderCellDef>Domain</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.inferred_domain || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Type Column -->
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Type</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.type || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Salary Column -->
+            <ng-container matColumnDef="salary">
+              <th mat-header-cell *matHeaderCellDef>Salary</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.salary?.join(', ') || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Duration Column -->
+            <ng-container matColumnDef="duration">
+              <th mat-header-cell *matHeaderCellDef>Duration</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.duration?.join(', ') || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Deadline Column -->
+            <ng-container matColumnDef="deadline">
+              <th mat-header-cell *matHeaderCellDef>Deadline</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.deadline?.join(', ') || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Language Column -->
+            <ng-container matColumnDef="language">
+              <th mat-header-cell *matHeaderCellDef>Language</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="extracted-value">
+                  <strong>{{ element.language?.toUpperCase() || 'N/A' }}</strong>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="extractedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: extractedColumns;"></tr>
+          </mat-table>
+
+          <!-- Skills Section -->
+          <div class="extracted-skills-section" *ngIf="extractedData.skills && extractedData.skills.length > 0">
+            <h3>Extracted Skills</h3>
+            <div class="skills-container">
+              <mat-chip *ngFor="let skill of extractedData.skills" class="skill-chip">
+                {{ skill.skill }}
+              </mat-chip>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="extracted-contacts-section" *ngIf="extractedData.contacts">
+            <h3>Contact Information</h3>
+            <div class="contacts-container">
+              <div *ngIf="extractedData.contacts.emails && extractedData.contacts.emails.length > 0">
+                <strong>Emails:</strong> {{ extractedData.contacts.emails.join(', ') }}
+              </div>
+              <div *ngIf="extractedData.contacts.phones && extractedData.contacts.phones.length > 0">
+                <strong>Phones:</strong> {{ extractedData.contacts.phones.join(', ') }}
+              </div>
+              <div *ngIf="extractedData.contacts.urls && extractedData.contacts.urls.length > 0">
+                <strong>URLs:</strong> {{ extractedData.contacts.urls.join(', ') }}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions>
+        <button mat-stroked-button 
+                color="primary"
+                (click)="exportToCSV()">
+          <mat-icon>download</mat-icon>
+          Export CSV
+        </button>
+        <button mat-raised-button 
+                color="accent"
+                (click)="applyToJob(selectedJob!)"
+                [disabled]="!selectedJob?.isActive || !isJobExtracted(selectedJob?.id || 0)">
+          <mat-icon>send</mat-icon>
+          Apply
+        </button>
+        <button mat-button mat-dialog-close>Close</button>
+      </mat-dialog-actions>
+    </div>
+  </ng-template>
+</div>

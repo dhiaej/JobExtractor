@@ -1,0 +1,146 @@
+<div class="admin-dashboard-container">
+  <div class="dashboard-header">
+    <h1>Admin Dashboard</h1>
+    <p>System overview and management</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-cards">
+    <mat-card class="kpi-card">
+      <mat-card-content>
+        <div class="kpi-content">
+          <mat-icon class="kpi-icon">people</mat-icon>
+          <div class="kpi-text">
+            <h3>{{ totalUsers }}</h3>
+            <p>Total Users</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card">
+      <mat-card-content>
+        <div class="kpi-content">
+          <mat-icon class="kpi-icon">work</mat-icon>
+          <div class="kpi-text">
+            <h3>{{ totalPostings }}</h3>
+            <p>Total Postings</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card">
+      <mat-card-content>
+        <div class="kpi-content">
+          <mat-icon class="kpi-icon">check_circle</mat-icon>
+          <div class="kpi-text">
+            <h3>{{ activeUsers }}</h3>
+            <p>Active Users</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="kpi-card">
+      <mat-card-content>
+        <div class="kpi-content">
+          <mat-icon class="kpi-icon">trending_up</mat-icon>
+          <div class="kpi-text">
+            <h3>{{ activePostings }}</h3>
+            <p>Active Postings</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="chart-row">
+      <div class="chart-container">
+        <app-chart
+          title="Users by Role"
+          chartType="pie"
+          [data]="usersByRoleData"
+          [labels]="usersByRoleLabels">
+        </app-chart>
+      </div>
+      
+      <div class="chart-container">
+        <app-chart
+          title="Postings by Domain"
+          chartType="bar"
+          [data]="postingsByDomainData"
+          [labels]="postingsByDomainLabels">
+        </app-chart>
+      </div>
+    </div>
+    
+    <div class="chart-row">
+      <div class="chart-container">
+        <app-chart
+          title="Active vs Inactive Users"
+          chartType="pie"
+          [data]="userStatusData"
+          [labels]="userStatusLabels">
+        </app-chart>
+      </div>
+      
+      <div class="chart-container">
+        <app-chart
+          title="Postings Over Time"
+          chartType="line"
+          [data]="postingsOverTimeData"
+          [labels]="postingsOverTimeLabels">
+        </app-chart>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Quick Actions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="navigateToUsers()">
+            <mat-icon>people</mat-icon>
+            Manage Users
+          </button>
+          <button mat-stroked-button color="primary" (click)="viewAllPostings()">
+            <mat-icon>work</mat-icon>
+            View All Postings
+          </button>
+          <button mat-stroked-button color="primary" (click)="exportData()">
+            <mat-icon>download</mat-icon>
+            Export Data
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="recent-activity">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Recent Activity</mat-card-title>
+        <mat-card-subtitle>Latest system events</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let activity of recentActivity">
+            <mat-icon class="activity-icon">{{ activity.icon }}</mat-icon>
+            <div class="activity-content">
+              <p class="activity-text">{{ activity.text }}</p>
+              <span class="activity-time">{{ activity.time | date:'short' }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

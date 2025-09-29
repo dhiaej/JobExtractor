@@ -1,0 +1,232 @@
+.extraction-container {
+  padding: var(--space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: var(--space-8);
+  
+  .header-content {
+    text-align: center;
+    
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      font-size: 2.5rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--text-primary);
+      margin-bottom: var(--space-4);
+      
+      mat-icon {
+        font-size: 2.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        color: var(--primary-500);
+      }
+    }
+    
+    .page-subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  }
+}
+
+.filters-section {
+  margin-bottom: var(--space-6);
+  
+  .filters-form {
+    .filters-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: var(--space-4);
+      margin-bottom: var(--space-4);
+      
+      @media (max-width: 1200px) {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .filter-actions {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+    }
+  }
+}
+
+.jobs-section {
+  margin-bottom: var(--space-6);
+  
+  .selection-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+    padding: var(--space-3);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    
+    .selection-count {
+      font-weight: var(--font-weight-medium);
+      color: var(--text-secondary);
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    
+    .jobs-table {
+      width: 100%;
+      
+      .mat-column-select {
+        width: 60px;
+        text-align: center;
+      }
+      
+      .mat-column-actions {
+        width: 80px;
+        text-align: center;
+      }
+    }
+  }
+  
+  .empty-state, .loading-state {
+    text-align: center;
+    padding: var(--space-8);
+    color: var(--text-secondary);
+    
+    mat-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      margin-bottom: var(--space-4);
+      opacity: 0.5;
+    }
+    
+    h3 {
+      margin-bottom: var(--space-2);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.extraction-actions {
+  margin-bottom: var(--space-6);
+  
+  .actions-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    .selection-info {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--text-secondary);
+      
+      mat-icon {
+        color: var(--primary-500);
+      }
+    }
+  }
+}
+
+.extracted-results-section {
+  .results-actions {
+    margin-bottom: var(--space-4);
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    
+    .extracted-table {
+      width: 100%;
+      
+      .mat-column-actions {
+        width: 120px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+// Dialog styles
+.extraction-results-dialog {
+  .results-summary {
+    margin-bottom: var(--space-4);
+    padding: var(--space-3);
+    background: var(--success-50);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--success-500);
+    
+    p {
+      margin: 0;
+      color: var(--success-700);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+  
+  .results-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    
+    .results-table {
+      width: 100%;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .extraction-container {
+    padding: var(--space-4);
+  }
+  
+  .page-header .header-content .page-title {
+    font-size: 2rem;
+    
+    mat-icon {
+      font-size: 2rem;
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+  
+  .filters-section .filters-form .filters-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .extraction-actions .actions-content {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+}
+
+// Dark theme adjustments
+[data-theme="dark"] {
+  .extraction-actions .actions-content .selection-info {
+    color: var(--text-tertiary);
+  }
+  
+  .extraction-results-dialog .results-summary {
+    background: rgba(76, 175, 80, 0.1);
+    border-left-color: var(--success-400);
+    
+    p {
+      color: var(--success-300);
+    }
+  }
+}

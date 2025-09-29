@@ -1,0 +1,57 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" mode="side" opened>
+    <mat-nav-list>
+      <div class="nav-section" *ngIf="currentUser">
+        <h3 class="nav-section-title">{{ getRoleTitle() }} Menu</h3>
+        
+        <!-- Admin Menu -->
+        <ng-container *ngIf="currentUser.role === 'ADMIN'">
+          <a mat-list-item routerLink="/admin/dashboard" routerLinkActive="active">
+            <mat-icon matListItemIcon>dashboard</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+          <a mat-list-item routerLink="/admin/users" routerLinkActive="active">
+            <mat-icon matListItemIcon>people</mat-icon>
+            <span matListItemTitle>Manage Users</span>
+          </a>
+        </ng-container>
+
+        <!-- Offerer Menu -->
+        <ng-container *ngIf="currentUser.role === 'OFFERER'">
+          <a mat-list-item routerLink="/poster/dashboard" routerLinkActive="active">
+            <mat-icon matListItemIcon>dashboard</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+          <a mat-list-item routerLink="/poster/postings" routerLinkActive="active">
+            <mat-icon matListItemIcon>work</mat-icon>
+            <span matListItemTitle>My Job Offers</span>
+          </a>
+          <a mat-list-item routerLink="/poster/create" routerLinkActive="active">
+            <mat-icon matListItemIcon>add</mat-icon>
+            <span matListItemTitle>Create Job Offer</span>
+          </a>
+        </ng-container>
+
+        <!-- Seeker Menu -->
+        <ng-container *ngIf="currentUser.role === 'SEEKER'">
+          <a mat-list-item routerLink="/seeker/dashboard" routerLinkActive="active">
+            <mat-icon matListItemIcon>dashboard</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+          <a mat-list-item routerLink="/seeker/search" routerLinkActive="active">
+            <mat-icon matListItemIcon>search</mat-icon>
+            <span matListItemTitle>Search Jobs</span>
+          </a>
+          <a mat-list-item routerLink="/seeker/extraction" routerLinkActive="active">
+            <mat-icon matListItemIcon>auto_awesome</mat-icon>
+            <span matListItemTitle>Job Extraction</span>
+          </a>
+        </ng-container>
+      </div>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-content">
+    <ng-content></ng-content>
+  </mat-sidenav-content>
+</mat-sidenav-container>

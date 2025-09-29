@@ -1,0 +1,89 @@
+<div class="create-posting-container">
+  <div class="header">
+    <h1>Create New Job Posting</h1>
+    <p>Upload a file or paste your job description below</p>
+  </div>
+
+  <mat-card class="form-card">
+    <mat-card-content>
+      <!-- File Upload Section -->
+      <div class="file-upload-section">
+        <h3>Upload Job Description File</h3>
+        <p>Upload a PDF, DOC, or TXT file containing the job description</p>
+        <form [formGroup]="fileForm" class="file-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Job Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter the job title (e.g., Software Engineer, Marketing Manager)">
+            <mat-error *ngIf="fileForm.get('title')?.hasError('required')">
+              Job title is required
+            </mat-error>
+            <mat-error *ngIf="fileForm.get('title')?.hasError('minlength')">
+              Job title must be at least 3 characters
+            </mat-error>
+          </mat-form-field>
+          
+          <div class="file-upload-container">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+            <button mat-raised-button color="primary" type="button" (click)="fileInput.click()" [disabled]="isLoading || fileForm.invalid">
+              <mat-icon>upload</mat-icon>
+              Choose File
+            </button>
+            <span class="file-info">Supported formats: PDF, DOC, DOCX, TXT</span>
+            <div *ngIf="selectedFile" class="selected-file">
+              <mat-icon>description</mat-icon>
+              <span>{{ selectedFile.name }}</span>
+              <button mat-icon-button (click)="clearFile()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <!-- Text Input Section -->
+      <div class="text-input-section">
+        <h3>Paste Job Description</h3>
+        <p>Copy and paste your job description text below</p>
+        <form [formGroup]="textForm" (ngSubmit)="onTextSubmit()" class="text-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Job Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter the job title (e.g., Software Engineer, Marketing Manager)">
+            <mat-error *ngIf="textForm.get('title')?.hasError('required')">
+              Job title is required
+            </mat-error>
+            <mat-error *ngIf="textForm.get('title')?.hasError('minlength')">
+              Job title must be at least 3 characters
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Job Description</mat-label>
+            <textarea matInput formControlName="description" rows="10" 
+                      placeholder="Paste your complete job description here... Include company, location, requirements, salary, etc."></textarea>
+            <mat-error *ngIf="textForm.get('description')?.hasError('required')">
+              Job description is required
+            </mat-error>
+            <mat-error *ngIf="textForm.get('description')?.hasError('minlength')">
+              Description must be at least 50 characters
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-stroked-button type="button" (click)="cancel()" class="cancel-btn">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="textForm.invalid || isLoading" class="submit-btn">
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <span *ngIf="!isLoading">Create Job from Text</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

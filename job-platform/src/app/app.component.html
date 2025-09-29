@@ -1,0 +1,13 @@
+<div class="app-container">
+  <app-navbar *ngIf="isAuthenticated"></app-navbar>
+  
+  <div class="main-wrapper" [class.with-navbar]="isAuthenticated">
+    <app-sidebar *ngIf="isAuthenticated">
+      <router-outlet></router-outlet>
+    </app-sidebar>
+    
+    <div *ngIf="!isAuthenticated" class="auth-content">
+      <router-outlet></router-outlet>
+  </div>
+  </div>
+</div>

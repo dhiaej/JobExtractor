@@ -1,0 +1,337 @@
+<div class="extraction-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>auto_awesome</mat-icon>
+        Job Data Extraction
+      </h1>
+      <p class="page-subtitle">Extract and analyze data from multiple job offers with advanced filtering</p>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Filter Jobs</mat-card-title>
+        <mat-card-subtitle>Use filters to find the jobs you want to extract data from</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="filterForm" class="filters-form">
+          <div class="filters-row">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search Jobs</mat-label>
+              <input matInput formControlName="searchKeyword" placeholder="Search by job title or company...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Contract Type</mat-label>
+              <mat-select formControlName="contractType">
+                <mat-option value="">All Types</mat-option>
+                <mat-option *ngFor="let type of contractTypes" [value]="type">{{ type }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Salary Range</mat-label>
+              <mat-select formControlName="salaryRange">
+                <mat-option value="">All Ranges</mat-option>
+                <mat-option *ngFor="let range of salaryRanges" [value]="range">{{ range }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Date Range</mat-label>
+              <mat-select formControlName="dateRange">
+                <mat-option value="">All Dates</mat-option>
+                <mat-option value="today">Today</mat-option>
+                <mat-option value="week">This Week</mat-option>
+                <mat-option value="month">This Month</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          
+          <div class="filter-actions">
+            <button mat-raised-button color="primary" (click)="applyFilters()">
+              <mat-icon>filter_list</mat-icon>
+              Apply Filters
+            </button>
+            <button mat-stroked-button (click)="clearFilters()">
+              <mat-icon>clear</mat-icon>
+              Clear Filters
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Jobs Selection Section -->
+  <div class="jobs-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Select Jobs to Extract</mat-card-title>
+        <mat-card-subtitle>{{ filteredJobs.length }} job(s) found</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="selection-actions">
+          <button mat-stroked-button (click)="selectAllJobs()">
+            <mat-icon>{{ isAllSelected() ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+            {{ isAllSelected() ? 'Deselect All' : 'Select All' }}
+          </button>
+          <span class="selection-count">{{ selectedJobs.size }} job(s) selected</span>
+        </div>
+        
+        <div class="table-container" *ngIf="!loadingJobs && filteredJobs.length > 0">
+          <table mat-table [dataSource]="jobsDataSource" matSort class="jobs-table">
+            <!-- Selection Column -->
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef>
+                <mat-checkbox 
+                  [checked]="isAllSelected()"
+                  [indeterminate]="selectedJobs.size > 0 && !isAllSelected()"
+                  (change)="selectAllJobs()">
+                </mat-checkbox>
+              </th>
+              <td mat-cell *matCellDef="let job">
+                <mat-checkbox 
+                  [checked]="isJobSelected(job.id)"
+                  (change)="toggleJobSelection(job.id)">
+                </mat-checkbox>
+              </td>
+            </ng-container>
+
+            <!-- Job Title Column -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Job Title</th>
+              <td mat-cell *matCellDef="let job">{{ job.title || 'Untitled Job' }}</td>
+            </ng-container>
+
+            <!-- Company Column -->
+            <ng-container matColumnDef="company">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Company</th>
+              <td mat-cell *matCellDef="let job">{{ job.company || 'N/A' }}</td>
+            </ng-container>
+
+            <!-- Location Column -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Location</th>
+              <td mat-cell *matCellDef="let job">{{ job.location || 'N/A' }}</td>
+            </ng-container>
+
+            <!-- Contract Type Column -->
+            <ng-container matColumnDef="contractType">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Contract Type</th>
+              <td mat-cell *matCellDef="let job">
+                <mat-chip [color]="getContractTypeColor(job.contractType)">
+                  {{ job.contractType || 'N/A' }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Salary Column -->
+            <ng-container matColumnDef="salary">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Salary</th>
+              <td mat-cell *matCellDef="let job">{{ job.salary || 'N/A' }}</td>
+            </ng-container>
+
+            <!-- Created Date Column -->
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Posted</th>
+              <td mat-cell *matCellDef="let job">{{ job.createdAt | date:'short' }}</td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let job">
+                <button mat-icon-button (click)="toggleJobSelection(job.id)" matTooltip="Toggle Selection">
+                  <mat-icon>{{ isJobSelected(job.id) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="jobsColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: jobsColumns;"></tr>
+          </table>
+          
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
+        </div>
+
+        <div class="empty-state" *ngIf="!loadingJobs && filteredJobs.length === 0">
+          <mat-icon>search_off</mat-icon>
+          <h3>No Jobs Found</h3>
+          <p>Try adjusting your filters to find more jobs.</p>
+        </div>
+
+        <div class="loading-state" *ngIf="loadingJobs">
+          <mat-spinner></mat-spinner>
+          <p>Loading jobs...</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Extraction Actions -->
+  <div class="extraction-actions" *ngIf="selectedJobs.size > 0">
+    <mat-card>
+      <mat-card-content>
+        <div class="actions-content">
+          <div class="selection-info">
+            <mat-icon>auto_awesome</mat-icon>
+            <span>{{ selectedJobs.size }} job(s) selected for extraction</span>
+          </div>
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="extractSelectedJobs()"
+                  [disabled]="extractingJobs">
+            <mat-spinner *ngIf="extractingJobs" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!extractingJobs">auto_awesome</mat-icon>
+            {{ extractingJobs ? 'Extracting...' : 'Extract Selected Jobs' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Extracted Results Section -->
+  <div class="extracted-results-section" *ngIf="extractedJobs.length > 0">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Extracted Results</mat-card-title>
+        <mat-card-subtitle>{{ extractedJobs.length }} job(s) extracted</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="results-actions">
+          <button mat-raised-button color="accent" (click)="exportAllExtractions()">
+            <mat-icon>download</mat-icon>
+            Export All to CSV
+          </button>
+        </div>
+        
+        <div class="table-container">
+          <table mat-table [dataSource]="extractedDataSource" class="extracted-table">
+            <!-- Job Title Column -->
+            <ng-container matColumnDef="jobTitle">
+              <th mat-header-cell *matHeaderCellDef>Job Title</th>
+              <td mat-cell *matCellDef="let extraction">{{ extraction.jobTitle }}</td>
+            </ng-container>
+
+            <!-- Company Column -->
+            <ng-container matColumnDef="company">
+              <th mat-header-cell *matHeaderCellDef>Company</th>
+              <td mat-cell *matCellDef="let extraction">{{ extraction.extractedData.company?.value || 'N/A' }}</td>
+            </ng-container>
+
+            <!-- Location Column -->
+            <ng-container matColumnDef="location">
+              <th mat-header-cell *matHeaderCellDef>Location</th>
+              <td mat-cell *matCellDef="let extraction">
+                {{ formatArrayValue(extraction.extractedData.location?.value) }}
+              </td>
+            </ng-container>
+
+            <!-- Contract Type Column -->
+            <ng-container matColumnDef="contractType">
+              <th mat-header-cell *matHeaderCellDef>Contract Type</th>
+              <td mat-cell *matCellDef="let extraction">
+                {{ formatArrayValue(extraction.extractedData.contract_type) }}
+              </td>
+            </ng-container>
+
+            <!-- Salary Column -->
+            <ng-container matColumnDef="salary">
+              <th mat-header-cell *matHeaderCellDef>Salary</th>
+              <td mat-cell *matCellDef="let extraction">
+                {{ formatArrayValue(extraction.extractedData.salary) }}
+              </td>
+            </ng-container>
+
+            <!-- Extracted Date Column -->
+            <ng-container matColumnDef="extractedAt">
+              <th mat-header-cell *matHeaderCellDef>Extracted At</th>
+              <td mat-cell *matCellDef="let extraction">{{ extraction.extractedAt | date:'short' }}</td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let extraction">
+                <button mat-icon-button (click)="viewExtractionDetails(extraction)" matTooltip="View Details">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button (click)="removeExtraction(extraction)" matTooltip="Remove">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="extractedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: extractedColumns;"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- Extraction Results Dialog -->
+<ng-template #extractionResultsDialog>
+  <div class="extraction-results-dialog">
+    <h2 mat-dialog-title>
+      <mat-icon>auto_awesome</mat-icon>
+      Extraction Results
+    </h2>
+    <mat-dialog-content>
+      <div class="results-summary">
+        <p>Successfully extracted data from {{ extractedJobs.length }} job(s)</p>
+      </div>
+      
+      <div class="results-table-container">
+        <table mat-table [dataSource]="extractedDataSource" class="results-table">
+          <ng-container matColumnDef="jobTitle">
+            <th mat-header-cell *matHeaderCellDef>Job Title</th>
+            <td mat-cell *matCellDef="let extraction">{{ extraction.jobTitle }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="company">
+            <th mat-header-cell *matHeaderCellDef>Company</th>
+            <td mat-cell *matCellDef="let extraction">{{ extraction.extractedData.company?.value || 'N/A' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="location">
+            <th mat-header-cell *matHeaderCellDef>Location</th>
+            <td mat-cell *matCellDef="let extraction">
+              {{ formatArrayValue(extraction.extractedData.location?.value) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="contractType">
+            <th mat-header-cell *matHeaderCellDef>Contract Type</th>
+            <td mat-cell *matCellDef="let extraction">
+              {{ formatArrayValue(extraction.extractedData.contract_type) }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="salary">
+            <th mat-header-cell *matHeaderCellDef>Salary</th>
+            <td mat-cell *matCellDef="let extraction">
+              {{ formatArrayValue(extraction.extractedData.salary) }}
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="extractedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: extractedColumns;"></tr>
+        </table>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button mat-raised-button color="accent" (click)="exportAllExtractions()">
+        <mat-icon>download</mat-icon>
+        Export to CSV
+      </button>
+      <button mat-button mat-dialog-close>Close</button>
+    </mat-dialog-actions>
+  </div>
+</ng-template>
