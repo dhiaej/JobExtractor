@@ -33,13 +33,7 @@
               </mat-select>
             </mat-form-field>
             
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Salary Range</mat-label>
-              <mat-select formControlName="salaryRange">
-                <mat-option value="">All Ranges</mat-option>
-                <mat-option *ngFor="let range of salaryRanges" [value]="range">{{ range }}</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <!-- Salary Range filter removed per request -->
             
             <mat-form-field appearance="outline" class="filter-field">
               <mat-label>Date Range</mat-label>

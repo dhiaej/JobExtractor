@@ -21,4 +21,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     boolean existsBySeekerIdAndJobOfferId(Long seekerId, Long jobOfferId);
     
     void deleteBySeekerAndJobOffer(User seeker, JobOffer jobOffer);
+
+    // Bulk delete favorites when a job offer is removed
+    void deleteByJobOffer_Id(Long jobOfferId);
 }

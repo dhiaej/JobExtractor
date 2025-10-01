@@ -1,6 +1,6 @@
 package com.jobplatform.service;
 
-import com.jobplatform.dto.ExtractorRequest;
+// import com.jobplatform.dto.ExtractorRequest;
 import com.jobplatform.dto.ExtractorResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -48,7 +48,7 @@ public class ExtractorService {
             
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 // Parse JSON response manually to avoid type casting issues
-                String jsonResponse = response.getBody();
+                // String jsonResponse = response.getBody();
                 
                 // For now, return a mock response that matches the Flask output structure
                 // This will be replaced with proper JSON parsing
@@ -174,19 +174,16 @@ public class ExtractorService {
      */
     public ExtractorResponse extractFromFile(MultipartFile file) {
         try {
-            // Read file content
-            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-            
-            // For PDF files, we need to handle them differently
-            if (file.getOriginalFilename() != null && 
-                file.getOriginalFilename().toLowerCase().endsWith(".pdf")) {
-                // For PDF files, we'll send the file directly to the extractor
+            String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+            // For binary documents, send directly to extractor (let Flask do OCR/text handling)
+            if (filename.endsWith(".pdf") || filename.endsWith(".doc") || filename.endsWith(".docx")) {
                 return extractFromFileDirect(file);
             }
-            
-            // For text files, extract directly
+
+            // For text-like files, read bytes as UTF-8 and extract
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             return extractFromText(content);
-            
+
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file: " + e.getMessage(), e);
         }
@@ -199,22 +196,40 @@ public class ExtractorService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            
-            // Create multipart request
-            Map<String, Object> body = new HashMap<>();
-            body.put("file", file.getResource());
-            
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-            
-            ResponseEntity<ExtractorResponse> response = restTemplate.exchange(
-                extractorServiceUrl + "/api/batch-extract", 
-                HttpMethod.POST, 
-                entity, 
-                ExtractorResponse.class
+
+            org.springframework.util.LinkedMultiValueMap<String, Object> multipartBody = new org.springframework.util.LinkedMultiValueMap<>();
+
+            // Ensure filename and content-disposition are set for the file part
+            final String originalFilename = file.getOriginalFilename();
+            org.springframework.core.io.ByteArrayResource resource = new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return originalFilename;
+                }
+            };
+
+            HttpHeaders partHeaders = new HttpHeaders();
+            partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            partHeaders.setContentDispositionFormData("file", originalFilename);
+            HttpEntity<org.springframework.core.io.ByteArrayResource> filePart = new HttpEntity<>(resource, partHeaders);
+            multipartBody.add("file", filePart);
+
+            HttpEntity<org.springframework.util.LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(multipartBody, headers);
+
+            ResponseEntity<java.util.Map<String, Object>> response = restTemplate.exchange(
+                extractorServiceUrl + "/api/batch-extract",
+                HttpMethod.POST,
+                entity,
+                (Class<java.util.Map<String, Object>>)(Class<?>) java.util.Map.class
             );
-            
-            return response.getBody();
-            
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> map = response.getBody();
+                return convertMapToExtractorResponse(map);
+            }
+
+            throw new RuntimeException("Extractor service returned status: " + response.getStatusCode());
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to extract from file: " + e.getMessage(), e);
         }

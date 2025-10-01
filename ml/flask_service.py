@@ -6,6 +6,24 @@ from datetime import datetime
 from typing import Dict, Any, List
 import os
 import sys
+from typing import Optional
+import traceback
+from werkzeug.utils import secure_filename
+import tempfile
+
+# Optional OCR/text extraction deps
+try:
+    import pdfplumber  # For PDF text extraction
+except Exception:
+    pdfplumber = None
+try:
+    import docx2txt  # For DOCX text extraction
+except Exception:
+    docx2txt = None
+try:
+    from docx import Document  # python-docx as alternative DOCX parser
+except Exception:
+    Document = None
 
 # Add the current directory to Python path to import app.py
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -137,24 +155,31 @@ class JobExtractor:
         return "Tech Company"  # Default fallback
 
     def _extract_location(self, text: str) -> str:
-        """Extract location from text"""
+        """Extract location from text (robust to patterns without capture groups)"""
         patterns = [
             r'(?:location|based in|office in):\s*([^\n]+)',
             r'(?:remote|hybrid|on-site)',
             r'(?:in|at)\s+([A-Z][^,\n]+(?:,\s*[A-Z][^,\n]+)?)',
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
-                return match.group(1).strip()
-        
+                # If the regex has a capturing group, use it; otherwise, use the whole match
+                try:
+                    if match.lastindex and match.lastindex >= 1:
+                        return match.group(1).strip()
+                    return match.group(0).strip()
+                except Exception:
+                    # Safe fallback
+                    return match.group(0)
+
         # Look for common location patterns
         location_pattern = r'\b(?:New York|San Francisco|Los Angeles|Chicago|Boston|Seattle|Austin|Denver|Miami|London|Paris|Berlin|Tokyo|Singapore|Toronto|Vancouver|Remote|Hybrid|On-site)\b'
         match = re.search(location_pattern, text, re.IGNORECASE)
         if match:
             return match.group(0)
-        
+
         return "Remote"  # Default fallback
 
     def _extract_contract_type(self, text_lower: str) -> str:
@@ -207,18 +232,38 @@ class JobExtractor:
         """Extract salary information from text"""
         patterns = [
             r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:per\s+)?(?:year|annually|yr)',
+            r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:per\s+)?(?:month|mo)',
             r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:per\s+)?(?:hour|hr)',
-            r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:to|-)\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:k|K)?',
-            r'(?:salary|compensation|pay):\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            r'(?:salary|compensation|pay)\s*:?\s*\$?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            r'(\d{1,3})(?:k|K)\b',  # e.g., 120k
+            r'\$\s?(\d{1,3}(?:,\d{3})*)',
         ]
         
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
-                if len(match.groups()) == 2:  # Range
+                # Prevent misclassifying duration or dates as salary
+                window_start = max(match.start() - 20, 0)
+                window_end = min(match.end() + 20, len(text))
+                context = text[window_start:window_end].lower()
+                if 'month' in context or 'months' in context:
+                    continue
+                if re.search(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b', context):
+                    continue
+                if re.search(r'\b\d{4}-\d{2}-\d{2}\b', context):
+                    continue
+
+                if len(match.groups()) == 2:  # Range like 50 - 70
                     return f"${match.group(1)} - ${match.group(2)}"
-                else:
-                    return f"${match.group(1)}"
+
+                val = match.group(1)
+                # Normalize k-suffix 
+                if re.fullmatch(r'\d{1,3}', val) and re.search(r'k\b', match.group(0), re.IGNORECASE):
+                    try:
+                        return f"${int(val) * 1000}"
+                    except Exception:
+                        pass
+                return f"${val}"
         
         return "Competitive"  # Default fallback
 
@@ -310,21 +355,99 @@ def extract_file():
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
-        # Read file content
-        if file.filename.lower().endswith('.txt'):
-            text = file.read().decode('utf-8')
-        elif file.filename.lower().endswith('.pdf'):
-            # For PDF files, we'll extract text (simplified)
-            text = f"PDF file: {file.filename}\n\nThis is a job posting document. Please extract relevant information manually."
+        filename_lower = file.filename.lower()
+        safe_name = secure_filename(file.filename)
+        print(f"/api/batch-extract received file: name={safe_name}, content_type={getattr(file, 'content_type', None)}, mimetype={getattr(file, 'mimetype', None)}")
+
+        # Read file content with best-effort extraction
+        if filename_lower.endswith('.txt'):
+            try:
+                text = file.read().decode('utf-8', errors='ignore')
+            finally:
+                try:
+                    file.stream.seek(0)
+                except Exception:
+                    pass
+        elif filename_lower.endswith('.pdf'):
+            # Use OCR/text extraction for PDFs if available
+            text = ""
+            try:
+                if pdfplumber is not None:
+                    try:
+                        file.stream.seek(0)
+                    except Exception:
+                        pass
+                    with pdfplumber.open(file.stream) as pdf:
+                        pages_text = []
+                        for page in pdf.pages:
+                            page_text = page.extract_text() or ""
+                            pages_text.append(page_text)
+                        text = "\n".join(pages_text).strip()
+                # Fallback placeholder if empty or pdfplumber not available
+                if not text:
+                    text = f"PDF file: {file.filename}\n\n(No OCR module available or empty text extracted.)"
+            except Exception as e:
+                print("PDF extraction error:", str(e))
+                traceback.print_exc()
+                text = f"PDF file: {file.filename}\n\n(OCR failed: {str(e)})"
+        elif filename_lower.endswith('.docx'):
+            try:
+                if Document is not None:
+                    try:
+                        file.stream.seek(0)
+                    except Exception:
+                        pass
+                    doc = Document(file.stream)
+                    paragraphs = [p.text for p in doc.paragraphs if p.text]
+                    text = "\n".join(paragraphs).strip()
+                    if not text:
+                        text = f"DOCX file: {file.filename}\n\n(Empty document or no extractable text)"
+                elif docx2txt is not None:
+                    # Save to a temporary file path for docx2txt to process
+                    try:
+                        file.stream.seek(0)
+                    except Exception:
+                        pass
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp:
+                        tmp.write(file.read())
+                        tmp_path = tmp.name
+                    try:
+                        extracted = docx2txt.process(tmp_path) or ""
+                        text = extracted.strip() if extracted else f"DOCX file: {file.filename}\n\n(Empty document or no extractable text)"
+                    finally:
+                        try:
+                            os.remove(tmp_path)
+                        except Exception:
+                            pass
+                else:
+                    text = f"DOCX file: {file.filename}\n\n(Install python-docx or docx2txt to enable DOCX parsing.)"
+            except Exception as e:
+                print("DOCX parsing error:", str(e))
+                traceback.print_exc()
+                text = f"DOCX file: {file.filename}\n\n(Parsing failed: {str(e)})"
+        elif filename_lower.endswith('.doc'):
+            text = f"DOC file: {file.filename}\n\n(Parsing for .doc not implemented; convert to PDF or DOCX.)"
         else:
-            text = f"Document: {file.filename}\n\nThis is a job posting document. Please extract relevant information manually."
+            # Generic fallback
+            text = f"Document: {file.filename}\n\n(Unsupported type; provide TXT/PDF/DOCX for best results.)"
         
         # Extract job information
-        result = extractor.extract_job_info(text)
+        try:
+            result = extractor.extract_job_info(text)
+        except Exception as ex:
+            print("extract_job_info error:", str(ex))
+            traceback.print_exc()
+            return jsonify({'error': f'extraction failed: {str(ex)}', 'raw_text': text}), 500
+
+        # Ensure raw_text and language are present for backend consumption
+        result['raw_text'] = text
+        result['language'] = result.get('language', 'en')
         
         return jsonify(result)
     
     except Exception as e:
+        print("/api/batch-extract unhandled error:", str(e))
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

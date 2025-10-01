@@ -31,6 +31,12 @@ public class JobOfferService {
     
     @Autowired
     private ExtractorService extractorService;
+
+    @Autowired
+    private com.jobplatform.repository.FavoriteRepository favoriteRepository;
+
+    @Autowired
+    private com.jobplatform.repository.ApplicationRepository applicationRepository;
     
     private final ObjectMapper objectMapper = new ObjectMapper();
     
@@ -82,7 +88,8 @@ public class JobOfferService {
             return new JobOfferDto(savedJobOffer);
             
         } catch (Exception e) {
-            throw new RuntimeException("Failed to process file: " + e.getMessage(), e);
+            // Bubble up precise cause for UI visibility
+            throw new RuntimeException("Failed to process file: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
         }
     }
     
@@ -238,8 +245,30 @@ public class JobOfferService {
     public void deleteJobOffer(Long id) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Job offer not found"));
-        
+
+        // Remove dependent records to avoid FK constraint issues
+        favoriteRepository.deleteByJobOffer_Id(id);
+        applicationRepository.findByJobOfferId(id).forEach(app -> applicationRepository.delete(app));
+
         jobOfferRepository.delete(jobOffer);
+    }
+
+    /**
+     * ADMIN: Delete all job offers and their dependents
+     */
+    public void deleteAllJobOffers() {
+        java.util.List<JobOffer> all = jobOfferRepository.findAll();
+        if (all.isEmpty()) {
+            return;
+        }
+        java.util.List<Long> ids = all.stream().map(JobOffer::getId).toList();
+        // Delete dependents first
+        for (Long id : ids) {
+            favoriteRepository.deleteByJobOffer_Id(id);
+        }
+        applicationRepository.deleteByJobOffer_IdIn(ids);
+        // Delete job offers
+        jobOfferRepository.deleteAll(all);
     }
     
     /**

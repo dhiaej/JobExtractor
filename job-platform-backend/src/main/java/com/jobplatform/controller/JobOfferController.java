@@ -142,7 +142,7 @@ public class JobOfferController {
             JobOfferDto jobOffer = jobOfferService.createJobOfferFromFile(offererId, title, file);
             return ResponseEntity.ok(jobOffer);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
     }
     
@@ -187,6 +187,19 @@ public class JobOfferController {
     public ResponseEntity<Void> deleteJobOffer(@PathVariable Long id) {
         try {
             jobOfferService.deleteJobOffer(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * ADMIN: Delete all job offers
+     */
+    @DeleteMapping("/admin/all")
+    public ResponseEntity<Void> deleteAllJobOffers() {
+        try {
+            jobOfferService.deleteAllJobOffers();
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

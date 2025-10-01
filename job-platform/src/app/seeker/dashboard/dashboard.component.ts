@@ -267,9 +267,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.applicationStatusData = [
       statusCounts['PENDING'] || 0,
       statusCounts['ACCEPTED'] || 0,
-      statusCounts['REFUSED'] || 0
+      statusCounts['REJECTED'] || 0
     ];
-    this.applicationStatusLabels = ['Pending', 'Accepted', 'Refused'];
+    this.applicationStatusLabels = ['Pending', 'Accepted', 'Rejected'];
     console.log('Final chart data:', this.applicationStatusData);
   }
 

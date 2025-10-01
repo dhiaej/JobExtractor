@@ -187,81 +187,81 @@ export class SearchComponent implements OnInit {
   }
 
   private convertToCSV(data: any): string {
-    const headers = ['Field', 'Value', 'Confidence'];
+    const headers = ['Field', 'Value'];
     const rows = [headers];
 
     // Add job title
     if (data.job_title) {
-      rows.push(['Job Title', data.job_title.value || '', data.job_title.confidence || '']);
+      rows.push(['Job Title', data.job_title.value || '']);
     }
 
     // Add company
     if (data.company) {
-      rows.push(['Company', data.company.value || '', data.company.confidence || '']);
+      rows.push(['Company', data.company.value || '']);
     }
 
     // Add location
     if (data.location) {
       const locationValue = Array.isArray(data.location.value) ? data.location.value.join(', ') : data.location.value;
-      rows.push(['Location', locationValue || '', data.location.confidence || '']);
+      rows.push(['Location', locationValue || '']);
     }
 
     // Add contract type
     if (data.contract_type) {
       const contractValue = Array.isArray(data.contract_type) ? data.contract_type.join(', ') : data.contract_type;
-      rows.push(['Contract Type', contractValue || '', '']);
+      rows.push(['Contract Type', contractValue || '']);
     }
 
     // Add domain
     if (data.inferred_domain) {
-      rows.push(['Domain', data.inferred_domain || '', '']);
+      rows.push(['Domain', data.inferred_domain || '']);
     }
 
     // Add type
     if (data.type) {
-      rows.push(['Type', data.type || '', '']);
+      rows.push(['Type', data.type || '']);
     }
 
     // Add salary
     if (data.salary) {
       const salaryValue = Array.isArray(data.salary) ? data.salary.join(', ') : data.salary;
-      rows.push(['Salary', salaryValue || '', '']);
+      rows.push(['Salary', salaryValue || '']);
     }
 
     // Add duration
     if (data.duration) {
       const durationValue = Array.isArray(data.duration) ? data.duration.join(', ') : data.duration;
-      rows.push(['Duration', durationValue || '', '']);
+      rows.push(['Duration', durationValue || '']);
     }
 
     // Add deadline
     if (data.deadline) {
       const deadlineValue = Array.isArray(data.deadline) ? data.deadline.join(', ') : data.deadline;
-      rows.push(['Deadline', deadlineValue || '', '']);
+      rows.push(['Deadline', deadlineValue || '']);
     }
 
     // Add language
     if (data.language) {
-      rows.push(['Language', data.language || '', '']);
+      rows.push(['Language', data.language || '']);
     }
 
     // Add skills
     if (data.skills && Array.isArray(data.skills)) {
       data.skills.forEach((skill: any, index: number) => {
-        rows.push([`Skill ${index + 1}`, skill.skill || '', skill.confidence || '']);
+        rows.push([`Skill ${index + 1}`, skill.skill || '']);
       });
     }
 
     // Add contacts
     if (data.contacts) {
       if (data.contacts.emails && data.contacts.emails.length > 0) {
-        rows.push(['Email Contacts', data.contacts.emails.join(', '), '']);
+        rows.push(['Email Contacts', data.contacts.emails.join(', ')]);
       }
       if (data.contacts.phones && data.contacts.phones.length > 0) {
-        rows.push(['Phone Contacts', data.contacts.phones.join(', '), '']);
+        rows.push(['Phone Contacts', data.contacts.phones.join(', ')]);
       }
       if (data.contacts.urls && data.contacts.urls.length > 0) {
-        rows.push(['URL Contacts', data.contacts.urls.join(', '), '']);
+        rows.push(['URL Contacts', data.contacts.urls.join(', ')]);
       }
     }
 

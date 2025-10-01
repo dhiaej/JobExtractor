@@ -67,4 +67,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     
     // Get applications by job offer and status with pagination
     Page<Application> findByJobOfferIdAndStatus(Long jobOfferId, Application.ApplicationStatus status, Pageable pageable);
+
+    // Bulk delete by job offer id(s)
+    void deleteByJobOffer_Id(Long jobOfferId);
+    void deleteByJobOffer_IdIn(java.util.List<Long> jobOfferIds);
 }

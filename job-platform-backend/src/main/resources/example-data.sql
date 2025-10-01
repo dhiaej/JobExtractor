@@ -9,9 +9,9 @@ ALTER TABLE job_offers AUTO_INCREMENT = 1;
 ALTER TABLE applications AUTO_INCREMENT = 1;
 
 -- Create example users
-INSERT INTO users (name, email, password, role, is_active, created_at) VALUES
-('John Smith', 'john.smith@email.com', '$2a$10$example', 'SEEKER', true, '2024-01-15 10:00:00'),
-('Sarah Johnson', 'sarah.johnson@email.com', '$2a$10$example', 'OFFERER', true, '2024-01-20 14:30:00');
+INSERT INTO users (name, email, password, role, active) VALUES
+('John Smith', 'john.smith@email.com', '$2a$10$example', 'SEEKER', true),
+('Sarah Johnson', 'sarah.johnson@email.com', '$2a$10$example', 'OFFERER', true);
 
 -- Create job offers with different dates and titles
 INSERT INTO job_offers (offerer_id, title, company, location, contract_type, domain, skills, salary, duration, deadline, description, raw_text, extracted_data, is_active, created_at) VALUES

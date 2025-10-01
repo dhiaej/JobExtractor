@@ -47,7 +47,7 @@ export class ExtractionComponent implements OnInit, AfterViewInit {
   
   // Filter options
   contractTypes = ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship'];
-  salaryRanges = ['Under $30k', '$30k-$50k', '$50k-$75k', '$75k-$100k', '$100k+'];
+  // Removed salary range filter per request
   
   constructor(
     private fb: FormBuilder,
@@ -65,7 +65,6 @@ export class ExtractionComponent implements OnInit, AfterViewInit {
     this.filterForm = this.fb.group({
       searchKeyword: [''],
       contractType: [''],
-      salaryRange: [''],
       dateRange: ['']
     });
   }
@@ -106,26 +105,7 @@ export class ExtractionComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Filter by salary range
-    if (filters.salaryRange) {
-      filtered = filtered.filter(job => {
-        const salary = job.salary?.toLowerCase() || '';
-        switch (filters.salaryRange) {
-          case 'Under $30k':
-            return salary.includes('under') || salary.includes('30') || salary.includes('25') || salary.includes('20');
-          case '$30k-$50k':
-            return salary.includes('30') || salary.includes('40') || salary.includes('50');
-          case '$50k-$75k':
-            return salary.includes('50') || salary.includes('60') || salary.includes('70') || salary.includes('75');
-          case '$75k-$100k':
-            return salary.includes('75') || salary.includes('80') || salary.includes('90') || salary.includes('100');
-          case '$100k+':
-            return salary.includes('100') || salary.includes('120') || salary.includes('150') || salary.includes('200');
-          default:
-            return true;
-        }
-      });
-    }
+    // Salary range filter removed
 
     // Filter by date range
     if (filters.dateRange) {
